@@ -1,4 +1,3 @@
-// For simplicity, use local storage for user credentials
 const users = {
     user1: 'password1',
     user2: 'password2'
@@ -11,31 +10,47 @@ document.getElementById('login-form').addEventListener('submit', function(event)
 
     if (users[username] && users[username] === password) {
         sessionStorage.setItem('loggedInUser', username);
+        sessionStorage.setItem('currentPage', 1);
         window.location.href = 'test.html';
     } else {
         alert('Invalid username or password');
     }
 });
 
-// Function to load PDF pages (mockup function)
-function loadTestPages(numPages) {
+function loadTestPage(pageNumber) {
     const container = document.getElementById('test-container');
-    for (let i = 1; i <= numPages; i++) {
-        const pageDiv = document.createElement('div');
-        pageDiv.className = 'test-page';
-        pageDiv.innerHTML = `<h2>Page ${i}</h2><iframe src="pdf/page${i}.pdf" width="100%" height="500px"></iframe><br>`;
-        const inputLabel = document.createElement('label');
-        inputLabel.textContent = `Answer (Page ${i}):`;
-        const inputField = document.createElement('input');
-        inputField.type = 'text';
-        inputField.name = `answer-page-${i}`;
-        pageDiv.appendChild(inputLabel);
-        pageDiv.appendChild(inputField);
-        container.appendChild(pageDiv);
-    }
+    container.innerHTML = ''; // Clear previous content
+
+    const pageDiv = document.createElement('div');
+    pageDiv.className = 'test-page';
+    pageDiv.innerHTML = `<h2>Page ${pageNumber}</h2><iframe src="pdf/page${pageNumber}.pdf" width="100%" height="500px"></iframe><br>`;
+    
+    const inputLabel = document.createElement('label');
+    inputLabel.textContent = `Answer (Page ${pageNumber}):`;
+    const inputField = document.createElement('input');
+    inputField.type = 'text';
+    inputField.name = `answer-page-${pageNumber}`;
+    
+    pageDiv.appendChild(inputLabel);
+    pageDiv.appendChild(inputField);
+    container.appendChild(pageDiv);
+
+    const nextButton = document.createElement('button');
+    nextButton.textContent = 'Next';
+    nextButton.addEventListener('click', () => {
+        const answer = inputField.value;
+        sessionStorage.setItem(`answer-page-${pageNumber}`, answer);
+        const nextPageNumber = pageNumber + 1;
+        if (nextPageNumber <= totalPages) {
+            sessionStorage.setItem('currentPage', nextPageNumber);
+            loadTestPage(nextPageNumber);
+        } else {
+            submitTest();
+        }
+    });
+    container.appendChild(nextButton);
 }
 
-// Timer function
 let totalPages = 60;
 let timeLimit = 60; // in minutes
 let currentTime = timeLimit * 60; // convert to seconds
@@ -55,20 +70,22 @@ function startTimer() {
     }, 1000);
 }
 
-// Function to submit the test (mockup function)
 function submitTest() {
     alert('Time is up! Test submitted.');
+    const answers = {};
+    for (let i = 1; i <= totalPages; i++) {
+        answers[`page-${i}`] = sessionStorage.getItem(`answer-page-${i}`);
+    }
+    console.log('Answers:', answers);
     // Logic to save the answers in a database
 }
 
-// On page load
 document.addEventListener('DOMContentLoaded', function() {
     if (!sessionStorage.getItem('loggedInUser')) {
         window.location.href = 'index.html';
     } else {
-        loadTestPages(totalPages);
+        const currentPage = parseInt(sessionStorage.getItem('currentPage')) || 1;
+        loadTestPage(currentPage);
         startTimer();
     }
 });
-
-document.getElementById('submit-test').addEventListener('click', submitTest);
