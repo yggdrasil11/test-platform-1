@@ -1,0 +1,29 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+form {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+#test-container {
+    margin-top: 20px;
+}
+
+#timer {
+    font-size: 20px;
+    text-align: center;
+    margin-top: 20px;
+}
+
+button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+}
